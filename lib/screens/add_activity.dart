@@ -16,10 +16,19 @@ class AddActivity extends StatefulWidget {
 class _AddActivityState extends State<AddActivity> {
   final formKey = GlobalKey<FormState>();
 
-  late final Activity activity;
-
   String name = "";
   String description = "";
+  String nameError = "";
+  String descriptionError = "";
+
+  TextEditingController nameController = TextEditingController();
+
+
+  @override
+  void dispose() {
+    nameController.dispose();    
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,16 +45,37 @@ class _AddActivityState extends State<AddActivity> {
                 if(state is ActivityAdded){
                   Navigator.pushNamed(context, '/');
                 }
+
+                if(state is ActivityAddedErrorState){
+                    setState(() {
+                      if(state.message['name'] == null){
+                          nameError = "";
+                      }else{
+                        nameError = state.message['name'][0];
+                      }
+                      if(state.message['description'] == null){
+                          descriptionError = "";
+                      }else{
+                        descriptionError = state.message['description'][0];
+                      }
+                    });
+                }else{
+                  setState(() {
+                    nameError = "";
+                    descriptionError = "";
+                  });
+                }
               },
               builder: (context, state) {
-                 if(state is ActivityAddedErrorState){
-                return Center(
-                  child: Text(
-                    state.message,
-                    style: const TextStyle(fontSize: 16, color: Colors.red),
-                ),
-              );
-              }else if(state is ActivityAddedLoading){
+              //    if(state is ActivityAddedErrorState){
+              //   return Center(
+              //     child: Text(
+              //       state.message,
+              //       style: const TextStyle(fontSize: 16, color: Colors.red),
+              //   ),
+              // );
+              // }else 
+              if(state is ActivityAddedLoading){
                 return const Center(
                   child: CircularProgressIndicator()
                 );
@@ -71,11 +101,13 @@ class _AddActivityState extends State<AddActivity> {
                           ),
                           const SizedBox(height: 20),
                           TextFormField(
+                            controller: nameController,
                             decoration: InputDecoration(
                               contentPadding:
                                   const EdgeInsets.fromLTRB(8.0, 2.0, 8.0, 2.0),
                               fillColor: Colors.blue.withOpacity(0.1),
                               hintText: 'Activity Name',
+                              errorText: nameError == "" ? null: nameError,
                               filled: true,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(30.0),
@@ -110,6 +142,11 @@ class _AddActivityState extends State<AddActivity> {
                             onChanged: (val) {
                               setState(() {
                                 name = val.trim();
+                                if (name.length < 5){
+                                  nameError = "Name too short";
+                                }else{
+                                  nameError = "";
+                                }
                               });
                             },
                           ),
@@ -120,6 +157,7 @@ class _AddActivityState extends State<AddActivity> {
                                   const EdgeInsets.fromLTRB(8.0, 2.0, 8.0, 2.0),
                               fillColor: Colors.blue.withOpacity(0.1),
                               hintText: 'Description',
+                              errorText: descriptionError == "" ? null : descriptionError,
                               filled: true,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(30.0),
@@ -168,9 +206,7 @@ class _AddActivityState extends State<AddActivity> {
                             child: InkWell(
                               onTap: () {
                                 if (formKey.currentState!.validate()) {
-                                  activity = Activity(
-                                      name: name, description: description);
-                                      context.read<ActivityBloc>().add(AddActivityEvent(activity));
+                                      context.read<ActivityBloc>().add(AddActivityEvent(name, description));
                                 }
                               },
                               child: Center(

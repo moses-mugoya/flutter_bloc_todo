@@ -1,18 +1,22 @@
 import 'dart:ffi';
 
 import 'package:dio/dio.dart';
+import 'package:todo/network/custom_exceptions.dart';
+import 'package:todo/network/dio_interceptor.dart';
 
 
 
-class DioClient extends Interceptor{
+class DioClient{
   late Dio dio;
 
-  final baseUrl = "https://003c-2c0f-fe08-12-2-ec89-9da7-6f37-65e2.in.ngrok.io/";
+  final baseUrl = "https://ece5-2c0f-fe08-12-2-511e-ca9b-22cd-7fa4.in.ngrok.io/";
 
   DioClient(){
     dio = Dio(BaseOptions(
       baseUrl: baseUrl,
     ));
+
+    dio.interceptors.add(DioInterceptor());
 
   }
 
@@ -39,28 +43,11 @@ class DioClient extends Interceptor{
       print(response);
     } on DioError catch (e){
       print(e.message);
-      throw Exception(e.message);
+      throw CustomException(e.response!.data);
     }
 
     return response;
   }
-
-  @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    print('REQUEST[${options.method}] => PATH: ${options.path}');
-    return super.onRequest(options, handler);
-  }
-  @override
-  Future onResponse(Response response, ResponseInterceptorHandler handler) async {
-    print('RESPONSE[${response.statusCode}] => PATH: ${response.requestOptions.path}');
-    return super.onResponse(response, handler);
-  }
-  @override
-  Future onError(DioError err, ErrorInterceptorHandler handler) async {
-    print('ERROR[${err.response?.statusCode}] => PATH: ${err.requestOptions.path}');
-    return super.onError(err, handler);
-  }
-
 
 
 

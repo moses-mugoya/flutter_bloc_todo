@@ -6,8 +6,10 @@ abstract class ActivityEvent {}
 class LoadActivityEvent extends ActivityEvent{}
 
 class AddActivityEvent extends ActivityEvent{
-  final Activity activity;
+  final String name;
+  final String description;
 
-  AddActivityEvent(this.activity);
+  AddActivityEvent(this.name, this.description);
+
   
 }

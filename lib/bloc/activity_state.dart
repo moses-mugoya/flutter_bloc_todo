@@ -27,7 +27,7 @@ class ActivitiesLoaded extends ActivityState{
 
 class ActivityAddedErrorState extends ActivityState {
 
-  final String message;
+  var message;
   ActivityAddedErrorState({
     required this.message,
   });

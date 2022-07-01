@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:bloc/bloc.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:meta/meta.dart';
 import 'package:todo/models/activity.dart';
+import 'package:todo/network/custom_exceptions.dart';
 import 'package:todo/repository/activity_repository.dart';
 
 part 'activity_event.dart';
@@ -25,10 +28,10 @@ class ActivityBloc extends Bloc<ActivityEvent, ActivityState> {
     on<AddActivityEvent>((event, emit) async{
       emit(ActivityAddedLoading());
       try{
-        await activityRepository.addActivity(event.activity.name, event.activity.description);
+        await activityRepository.addActivity(event.name, event.description);
         emit(ActivityAdded());
-      }catch (e) {
-        emit(ActivityAddedErrorState(message: e.toString()));
+      } on CustomException catch (customError) {
+        emit(ActivityAddedErrorState(message: customError.errors));
       }
       
     });
