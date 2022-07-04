@@ -9,7 +9,7 @@ import 'package:todo/network/dio_interceptor.dart';
 class DioClient{
   late Dio dio;
 
-  final baseUrl = "https://ece5-2c0f-fe08-12-2-511e-ca9b-22cd-7fa4.in.ngrok.io/";
+  final baseUrl = "https://3d0d-2c0f-fe08-12-2-1d00-a9ca-9a0c-b0d9.in.ngrok.io/";
 
   DioClient(){
     dio = Dio(BaseOptions(
@@ -43,9 +43,13 @@ class DioClient{
       print(response);
     } on DioError catch (e){
       print(e.message);
-      throw CustomException(e.response!.data);
-    }
-
+      if(e.response?.statusCode == 400){
+        throw CustomException(e.response!.data);
+      }else{
+        throw Exception(e.message); 
+      }
+      
+    } 
     return response;
   }
 

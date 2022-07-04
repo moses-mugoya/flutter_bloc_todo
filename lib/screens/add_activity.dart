@@ -20,18 +20,24 @@ class _AddActivityState extends State<AddActivity> {
   String description = "";
   String nameError = "";
   String descriptionError = "";
+  bool isDisabled = true;
 
   TextEditingController nameController = TextEditingController();
+  TextEditingController desController = TextEditingController();
+
 
 
   @override
   void dispose() {
-    nameController.dispose();    
+    nameController.dispose(); 
+    desController.dispose();   
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+
+
     return BlocProvider(
         create: (context) =>
             ActivityBloc(RepositoryProvider.of<ActivityRepository>(context)),
@@ -48,17 +54,26 @@ class _AddActivityState extends State<AddActivity> {
 
                 if(state is ActivityAddedErrorState){
                     setState(() {
-                      if(state.message['name'] == null){
+                        
+                     if(state.errType == 'custom'){
+                        if(state.message['name'] == null){
                           nameError = "";
-                      }else{
-                        nameError = state.message['name'][0];
-                      }
-                      if(state.message['description'] == null){
-                          descriptionError = "";
-                      }else{
-                        descriptionError = state.message['description'][0];
-                      }
+                        }else{
+                          nameError = state.message['name'][0];
+                        }
+                        if(state.message['description'] == null){
+                            descriptionError = "";
+                        }else{
+                          descriptionError = state.message['description'][0];
+                        }
+                     }else{
+                       showAlertDialog(context, state.message);
+                     }
                     });
+                    nameController.text = name;
+                    desController.text = description;
+
+
                 }else{
                   setState(() {
                     nameError = "";
@@ -68,13 +83,11 @@ class _AddActivityState extends State<AddActivity> {
               },
               builder: (context, state) {
               //    if(state is ActivityAddedErrorState){
-              //   return Center(
-              //     child: Text(
-              //       state.message,
-              //       style: const TextStyle(fontSize: 16, color: Colors.red),
-              //   ),
-              // );
-              // }else 
+              //      if(nameError == "" || descriptionError == ""){
+              //          return null;
+              //      }
+                
+              // }else
               if(state is ActivityAddedLoading){
                 return const Center(
                   child: CircularProgressIndicator()
@@ -147,11 +160,18 @@ class _AddActivityState extends State<AddActivity> {
                                 }else{
                                   nameError = "";
                                 }
+
+                                if(name != "" && description != ""){
+                                  isDisabled = false;
+                                }else{
+                                  isDisabled = true;
+                                }
                               });
                             },
                           ),
                           const SizedBox(height: 20),
                           TextFormField(
+                            controller: desController,
                             decoration: InputDecoration(
                               contentPadding:
                                   const EdgeInsets.fromLTRB(8.0, 2.0, 8.0, 2.0),
@@ -192,23 +212,34 @@ class _AddActivityState extends State<AddActivity> {
                             onChanged: (val) {
                               setState(() {
                                 description = val.trim();
+                          
+                                if(name != "" && description != "" ){
+                                  isDisabled = false;
+                                }else{
+                                  isDisabled = true;
+                                }
+     
                               });
                             },
                           ),
                           const SizedBox(height: 20),
-                          Container(
+                          SizedBox(
                             height: 45.0,
                             width: double.infinity,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(30.0),
-                              color: Colors.blue[500],
-                            ),
-                            child: InkWell(
-                              onTap: () {
+                            child: ElevatedButton(
+                              onPressed: isDisabled ? null : () { 
                                 if (formKey.currentState!.validate()) {
-                                      context.read<ActivityBloc>().add(AddActivityEvent(name, description));
-                                }
+                                    context.read<ActivityBloc>().add(AddActivityEvent(name, description));
+                                    FocusManager.instance.primaryFocus?.unfocus();
+                                } 
                               },
+                              style: ElevatedButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30)
+                                ),
+                
+
+                              ),
                               child: Center(
                                 child: Text(
                                   'Add',
@@ -227,8 +258,41 @@ class _AddActivityState extends State<AddActivity> {
                   ),
                 ),
               );
-                
-              },
-            )));
+            },
+        )));
   }
+
+  showAlertDialog(BuildContext context, String errorMessage) {
+
+  // set up the button
+  Widget okButton = TextButton(
+    child: const Text("Close"),
+    onPressed: () { 
+      Navigator.pop(context);
+    },
+  );
+
+  // set up the AlertDialog
+  AlertDialog alert = AlertDialog(
+    title: const Text("Error!",
+    style: TextStyle(
+      color: Colors.red,
+    ),
+    
+    ),
+    content: Text(errorMessage),
+    actions: [
+      okButton,
+    ],
+  );
+
+  // show the dialog
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
+}
+
 }

@@ -21,6 +21,7 @@ class ActivityBloc extends Bloc<ActivityEvent, ActivityState> {
         final activities = await activityRepository.getActivities();
         emit(ActivitiesLoaded(activities));
       }catch (e) {
+        print("Error is ${e.toString()}");
         emit(ActivityErrorState(message: e.toString()));
       }
     });
@@ -31,7 +32,9 @@ class ActivityBloc extends Bloc<ActivityEvent, ActivityState> {
         await activityRepository.addActivity(event.name, event.description);
         emit(ActivityAdded());
       } on CustomException catch (customError) {
-        emit(ActivityAddedErrorState(message: customError.errors));
+        emit(ActivityAddedErrorState(message: customError.errors, errType: 'custom'));
+      } catch(e){
+        emit(ActivityAddedErrorState(message: e.toString(), errType: 'other'));
       }
       
     });

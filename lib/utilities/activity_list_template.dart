@@ -14,6 +14,7 @@ class ActivityListTemplate extends StatefulWidget {
 }
 
 class _ActivityListTemplateState extends State<ActivityListTemplate> {
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider<ActivityBloc>(

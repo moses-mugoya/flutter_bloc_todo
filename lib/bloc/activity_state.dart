@@ -28,8 +28,10 @@ class ActivitiesLoaded extends ActivityState{
 class ActivityAddedErrorState extends ActivityState {
 
   var message;
+  String errType;
   ActivityAddedErrorState({
     required this.message,
+    required this.errType
   });
 
 }
